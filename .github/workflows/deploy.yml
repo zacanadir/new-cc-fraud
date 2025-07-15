@@ -40,3 +40,4 @@ jobs:
             --allow-unauthenticated \
             --port 8080 \
             --service-account github-cicd@eco-carver-465001-q0.iam.gserviceaccount.com \
+            --set-env-vars API_TOKEN=${{ secrets.API_TOKEN }} \
