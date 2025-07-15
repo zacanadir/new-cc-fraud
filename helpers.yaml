@@ -1,0 +1,24 @@
+gcloud services enable run.googleapis.com \
+    artifactregistry.googleapis.com \
+    cloudbuild.googleapis.com \
+    aiplatform.googleapis.com \
+    bigquery.googleapis.com
+
+gcloud artifacts repositories create ml-apps \
+  --repository-format=docker \
+  --location=your-region
+
+# Set variables
+PROJECT_ID=$(gcloud config get-value project)
+REGION=your-region  # e.g., us-central1
+IMAGE_NAME=real-time-api
+
+# Build the Docker image
+gcloud builds submit --tag ${REGION}-docker.pkg.dev/${PROJECT_ID}/ml-apps/${IMAGE_NAME}
+
+gcloud run deploy real-time-api \
+  --image=${REGION}-docker.pkg.dev/${PROJECT_ID}/ml-apps/${IMAGE_NAME} \
+  --platform=managed \
+  --region=${REGION} \
+  --allow-unauthenticated \
+  --set-env-vars PROJECT_ID=$PROJECT_ID,REGION=$REGION,ENDPOINT_ID=your_endpoint_id,BQ_TABLE_ID=your_bq_table
