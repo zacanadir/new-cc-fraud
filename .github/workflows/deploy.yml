@@ -43,7 +43,7 @@ jobs:
         IMAGE_NAME: real-time-api
       run: |
         gcloud run deploy real-time-api \
-          --image=$REGION-docker.pkg.dev/$PROJECT_ID/ml-apps/$IMAGE_NAME \
+          --image=docker.pkg.dev/$PROJECT_ID/ml-apps/$IMAGE_NAME \
           --region=$REGION \
           --platform=managed \
           --allow-unauthenticated \
