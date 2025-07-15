@@ -1,0 +1,49 @@
+name: Deploy to Cloud Run
+
+on:
+  push:
+    branches:
+      - main  # or 'master' if that's your branch
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Google Cloud SDK
+      uses: google-github-actions/setup-gcloud@v1
+      with:
+        version: '>= 437.0.0'
+
+    - name: Authenticate with GCP
+      uses: google-github-actions/auth@v2
+      with:
+        credentials_json: '${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}'
+
+    - name: Configure Docker for Artifact Registry
+      run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev
+
+    - name: Build and push Docker image
+      env:
+        PROJECT_ID: ${{ steps.auth.outputs.project_id }}
+        REGION: us-central1       # e.g., us-central1
+        IMAGE_NAME: real-time-api
+      run: |
+        docker build -t $REGION-docker.pkg.dev/$PROJECT_ID/ml-apps/$IMAGE_NAME .
+        docker push $REGION-docker.pkg.dev/$PROJECT_ID/ml-apps/$IMAGE_NAME
+
+    - name: Deploy to Cloud Run
+      env:
+        PROJECT_ID: ${{ steps.auth.outputs.project_id }}
+        REGION: us-central1
+        IMAGE_NAME: real-time-api
+      run: |
+        gcloud run deploy real-time-api \
+          --image=$REGION-docker.pkg.dev/$PROJECT_ID/ml-apps/$IMAGE_NAME \
+          --region=$REGION \
+          --platform=managed \
+          --allow-unauthenticated \
+          --set-env-vars ENDPOINT_ID=979072223581044736,PROJECT_ID=$PROJECT_ID,REGION=$REGION,BQ_TABLE_ID=eco-carver-465001-q0.my_dataset.my-predictions
