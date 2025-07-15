@@ -32,8 +32,9 @@ jobs:
         REGION: us-central1       # e.g., us-central1
         IMAGE_NAME: real-time-api
       run: |
-        docker build -t $REGION-docker.pkg.dev/$PROJECT_ID/ml-apps/$IMAGE_NAME .
-        docker push $REGION-docker.pkg.dev/$PROJECT_ID/ml-apps/$IMAGE_NAME
+        docker build -t docker.pkg.dev/$PROJECT_ID/ml-apps/$IMAGE_NAME .
+        docker push docker.pkg.dev/$PROJECT_ID/ml-apps/$IMAGE_NAME
+
 
     - name: Deploy to Cloud Run
       env:
