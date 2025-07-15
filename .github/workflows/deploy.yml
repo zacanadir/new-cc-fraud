@@ -28,7 +28,7 @@ jobs:
 
     - name: Build and push Docker image
       env:
-        PROJECT_ID: ${{ steps.auth.outputs.project_id }}
+        PROJECT_ID: eco-carver-465001-q0
         REGION: us-central1       # e.g., us-central1
         IMAGE_NAME: real-time-api
       run: |
@@ -37,7 +37,7 @@ jobs:
 
     - name: Deploy to Cloud Run
       env:
-        PROJECT_ID: ${{ steps.auth.outputs.project_id }}
+        PROJECT_ID: eco-carver-465001-q0
         REGION: us-central1
         IMAGE_NAME: real-time-api
       run: |
