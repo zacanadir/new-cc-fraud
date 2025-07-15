@@ -26,6 +26,15 @@ jobs:
     - name: Configure Docker for Artifact Registry
       run: gcloud auth configure-docker docker.pkg.dev
 
+    - name: Debug environment
+      run: |
+        echo "PROJECT_ID=$PROJECT_ID"
+        echo "REGION=$REGION"
+        echo "IMAGE_NAME=$IMAGE_NAME"
+        gcloud auth list
+        docker info
+
+    
     - name: Build and push Docker image
       env:
         PROJECT_ID: eco-carver-465001-q0
