@@ -2,50 +2,41 @@ name: Deploy to Cloud Run
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
 
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
 
-    env:
-      PROJECT_ID: eco-carver-465001-q0
-      REGION: us-central1
-      IMAGE_NAME: real-time-api
-
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    - name: Authenticate with GCP
-      uses: google-github-actions/auth@v2
-      with:
-        credentials_json: '${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}'
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: '${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}'
 
-    - name: Set up gcloud and export credentials
-      uses: google-github-actions/setup-gcloud@v1
-      with:
-        version: '>= 437.0.0'
-        project_id: ${{ env.PROJECT_ID }}
-        export_default_credentials: true
 
-    - name: Confirm gcloud is authenticated
-      run: gcloud auth list
+      - name: Set up gcloud CLI
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: eco-carver-465001-q0
 
-    - name: Configure Docker for Artifact Registry
-      run: gcloud auth configure-docker docker.pkg.dev
+      - name: Build and push Docker image
+        run: |
+          IMAGE="gcr.io/eco-carver-465001-q0/real-time-api-image"
+          docker build -t $IMAGE .
+          gcloud auth configure-docker
+          docker push $IMAGE
 
-    - name: Build and push Docker image
-      run: |
-        docker build -t docker.pkg.dev/$PROJECT_ID/ml-apps/$IMAGE_NAME .
-        docker push docker.pkg.dev/$PROJECT_ID/ml-apps/$IMAGE_NAME
-
-    - name: Deploy to Cloud Run
-      run: |
-        gcloud run deploy $IMAGE_NAME \
-          --image=docker.pkg.dev/$PROJECT_ID/ml-apps/$IMAGE_NAME \
-          --region=$REGION \
-          --platform=managed \
-          --allow-unauthenticated \
-          --set-env-vars ENDPOINT_ID=979072223581044736,PROJECT_ID=$PROJECT_ID,REGION=$REGION,BQ_TABLE_ID=$PROJECT_ID.my_dataset.my-predictions
+      - name: Deploy to Cloud Run
+        run: |
+          IMAGE="gcr.io/eco-carver-465001-q0/real-time-api-image"
+          gcloud run deploy cc-fraud-api \
+            --image $IMAGE \
+            --platform managed \
+            --region us-central1 \
+            --allow-unauthenticated \
+            --port 8080 \
+            --service-account github-deployer@eco-carver-465001-q0.iam.gserviceaccount.com \
