@@ -3,11 +3,15 @@ name: Deploy to Cloud Run
 on:
   push:
     branches:
-      - main  # or 'master' if that's your branch
+      - main
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    env:
+      PROJECT_ID: eco-carver-465001-q0
+      REGION: us-central1
+      IMAGE_NAME: real-time-api
 
     steps:
     - name: Checkout code
@@ -34,26 +38,16 @@ jobs:
         gcloud auth list
         docker info
 
-    
     - name: Build and push Docker image
-      env:
-        PROJECT_ID: eco-carver-465001-q0
-        REGION: us-central1       # e.g., us-central1
-        IMAGE_NAME: real-time-api
       run: |
         docker build -t docker.pkg.dev/$PROJECT_ID/ml-apps/$IMAGE_NAME .
         docker push docker.pkg.dev/$PROJECT_ID/ml-apps/$IMAGE_NAME
 
-
     - name: Deploy to Cloud Run
-      env:
-        PROJECT_ID: eco-carver-465001-q0
-        REGION: us-central1
-        IMAGE_NAME: real-time-api
       run: |
-        gcloud run deploy real-time-api \
+        gcloud run deploy $IMAGE_NAME \
           --image=docker.pkg.dev/$PROJECT_ID/ml-apps/$IMAGE_NAME \
           --region=$REGION \
           --platform=managed \
           --allow-unauthenticated \
-          --set-env-vars ENDPOINT_ID=979072223581044736,PROJECT_ID=$PROJECT_ID,REGION=$REGION,BQ_TABLE_ID=eco-carver-465001-q0.my_dataset.my-predictions
+          --set-env-vars ENDPOINT_ID=979072223581044736,PROJECT_ID=$PROJECT_ID,REGION=$REGION,BQ_TABLE_ID=$PROJECT_ID.my_dataset.my-predictions
