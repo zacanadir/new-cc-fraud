@@ -1,10 +1,22 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Header, Depends
 from pydantic import BaseModel
+from typing import Literal
+import os
+
 from vertex_predict import predict_from_vertex
 from bq_logger import log_to_bigquery
 
 app = FastAPI()
 
+# Optional: Add token-based auth
+API_SECRET_TOKEN = os.getenv("API_TOKEN")
+
+def verify_token(authorization: str = Header(...)):
+    expected = f"Bearer {API_SECRET_TOKEN}"
+    if authorization != expected:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+# Input schema
 class InputData(BaseModel):
     Time: float
     V1: float
@@ -37,10 +49,12 @@ class InputData(BaseModel):
     V28: float
     Amount: float
 
-#this
+@app.get("/")
+def health_check():
+    return {"status": "running"}
 
 @app.post("/predict")
-async def predict(data: InputData):
+async def predict(data: InputData, authorized: None = Depends(verify_token)):
     try:
         instance = data.dict()
         prediction = predict_from_vertex(instance)
