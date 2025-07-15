@@ -37,7 +37,7 @@ class InputData(BaseModel):
     V28: float
     Amount: float
 
-
+#this
 
 @app.post("/predict")
 async def predict(data: InputData):
