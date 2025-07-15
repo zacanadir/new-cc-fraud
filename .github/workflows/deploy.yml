@@ -39,4 +39,4 @@ jobs:
             --region us-central1 \
             --allow-unauthenticated \
             --port 8080 \
-            --service-account github-deployer@eco-carver-465001-q0.iam.gserviceaccount.com \
+            --service-account github-cicd@eco-carver-465001-q0.iam.gserviceaccount.com \
