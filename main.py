@@ -5,6 +5,7 @@ import os
 
 from vertex_predict import predict_from_vertex
 from bq_logger import log_to_bigquery
+import pandas as pd
 
 app = FastAPI()
 
@@ -57,7 +58,7 @@ def health_check():
 async def predict(data: InputData, authorized: None = Depends(verify_token)):
     try:
         instance = data.dict()
-        prediction = predict_from_vertex(instance)
+        prediction = predict_from_vertex(pd.DataFrame(instance))
         log_to_bigquery(instance, prediction)
         return {"prediction": prediction}
     except Exception as e:
